@@ -9,7 +9,7 @@ from nlos_sim.geometry.shapes import Box, Circle
 
 def test_circle_circle_separated_returns_none() -> None:
     contact = overlap(
-        Circle(1.0), (0.0, 0.0, 0.0), Circle(1.0), (5.0, 0.0, 0.0)
+        Circle(1.0), np.array((0.0, 0.0, 0.0)), Circle(1.0), np.array((5.0, 0.0, 0.0))
     )
 
     assert contact is None
@@ -17,7 +17,7 @@ def test_circle_circle_separated_returns_none() -> None:
 
 def test_circle_circle_touching_has_zero_penetration() -> None:
     contact = overlap(
-        Circle(1.0), (0.0, 0.0, 0.0), Circle(1.0), (2.0, 0.0, 0.0)
+        Circle(1.0), np.array((0.0, 0.0, 0.0)), Circle(1.0), np.array((2.0, 0.0, 0.0))
     )
 
     assert contact is not None
@@ -28,7 +28,7 @@ def test_circle_circle_touching_has_zero_penetration() -> None:
 
 def test_circle_circle_penetrating_contact() -> None:
     contact = overlap(
-        Circle(1.0), (0.0, 0.0, 0.0), Circle(1.0), (1.5, 0.0, 0.0)
+        Circle(1.0), np.array((0.0, 0.0, 0.0)), Circle(1.0), np.array((1.5, 0.0, 0.0))
     )
 
     assert contact is not None
@@ -39,7 +39,7 @@ def test_circle_circle_penetrating_contact() -> None:
 
 def test_circle_circle_reversed_normal_points_other_way() -> None:
     contact = overlap(
-        Circle(1.0), (1.5, 0.0, 0.0), Circle(1.0), (0.0, 0.0, 0.0)
+        Circle(1.0), np.array((1.5, 0.0, 0.0)), Circle(1.0), np.array((0.0, 0.0, 0.0))
     )
 
     assert contact is not None
@@ -48,7 +48,7 @@ def test_circle_circle_reversed_normal_points_other_way() -> None:
 
 def test_concentric_circles_use_deterministic_normal() -> None:
     contact = overlap(
-        Circle(1.0), (0.0, 0.0, 0.0), Circle(2.0), (0.0, 0.0, 0.0)
+        Circle(1.0), np.array((0.0, 0.0, 0.0)), Circle(2.0), np.array((0.0, 0.0, 0.0))
     )
 
     assert contact is not None
@@ -59,7 +59,7 @@ def test_concentric_circles_use_deterministic_normal() -> None:
 
 def test_circle_box_separated_returns_none() -> None:
     contact = overlap(
-        Box(2.0, 2.0), (0.0, 0.0, 0.0), Circle(1.0), (-3.0, 0.0, 0.0)
+        Box(2.0, 2.0), np.array((0.0, 0.0, 0.0)), Circle(1.0), np.array((-3.0, 0.0, 0.0))
     )
 
     assert contact is None
@@ -67,7 +67,7 @@ def test_circle_box_separated_returns_none() -> None:
 
 def test_circle_box_touching_has_zero_penetration() -> None:
     contact = overlap(
-        Box(2.0, 2.0), (0.0, 0.0, 0.0), Circle(1.0), (-2.0, 0.0, 0.0)
+        Box(2.0, 2.0), np.array((0.0, 0.0, 0.0)), Circle(1.0), np.array((-2.0, 0.0, 0.0))
     )
 
     assert contact is not None
@@ -78,7 +78,7 @@ def test_circle_box_touching_has_zero_penetration() -> None:
 
 def test_circle_box_penetrating_contact() -> None:
     contact = overlap(
-        Box(2.0, 2.0), (0.0, 0.0, 0.0), Circle(1.0), (-1.5, 0.0, 0.0)
+        Box(2.0, 2.0), np.array((0.0, 0.0, 0.0)), Circle(1.0), np.array((-1.5, 0.0, 0.0))
     )
 
     assert contact is not None
@@ -89,7 +89,7 @@ def test_circle_box_penetrating_contact() -> None:
 
 def test_circle_box_reversed_arguments_flip_normal() -> None:
     contact = overlap(
-        Circle(1.0), (-1.5, 0.0, 0.0), Box(2.0, 2.0), (0.0, 0.0, 0.0)
+        Circle(1.0), np.array((-1.5, 0.0, 0.0)), Box(2.0, 2.0), np.array((0.0, 0.0, 0.0))
     )
 
     assert contact is not None
@@ -100,7 +100,7 @@ def test_circle_box_reversed_arguments_flip_normal() -> None:
 
 def test_circle_center_inside_box_uses_nearest_face() -> None:
     contact = overlap(
-        Box(2.0, 2.0), (0.0, 0.0, 0.0), Circle(0.5), (0.3, 0.2, 0.0)
+        Box(2.0, 2.0), np.array((0.0, 0.0, 0.0)), Circle(0.5), np.array((0.3, 0.2, 0.0))
     )
 
     assert contact is not None
@@ -111,7 +111,7 @@ def test_circle_center_inside_box_uses_nearest_face() -> None:
 
 def test_circle_center_inside_box_reversed_normal_is_inward() -> None:
     contact = overlap(
-        Circle(0.5), (0.3, 0.2, 0.0), Box(2.0, 2.0), (0.0, 0.0, 0.0)
+        Circle(0.5), np.array((0.3, 0.2, 0.0)), Box(2.0, 2.0), np.array((0.0, 0.0, 0.0))
     )
 
     assert contact is not None
@@ -120,7 +120,7 @@ def test_circle_center_inside_box_reversed_normal_is_inward() -> None:
 
 def test_circle_center_on_box_boundary_is_pushed_out() -> None:
     contact = overlap(
-        Box(2.0, 2.0), (0.0, 0.0, 0.0), Circle(0.5), (1.0, 0.0, 0.0)
+        Box(2.0, 2.0), np.array((0.0, 0.0, 0.0)), Circle(0.5), np.array((1.0, 0.0, 0.0))
     )
 
     assert contact is not None
@@ -133,7 +133,7 @@ def test_box_box_overlap_raises_clear_error() -> None:
     with pytest.raises(NotImplementedError, match="Box-box"):
         overlap(
             Box(1.0, 1.0),
-            (0.0, 0.0, 0.0),
+            np.array((0.0, 0.0, 0.0)),
             Box(1.0, 1.0),
-            (0.0, 0.0, 0.0),
+            np.array((0.0, 0.0, 0.0)),
         )

@@ -36,7 +36,7 @@ class Entity(ABC):
         self,
         shape: Shape,
         material: Material,
-        pose: Sequence[float] = ORIGIN_POSE,
+        pose: Pose = ORIGIN_POSE,
     ) -> None:
         self.shape = shape
         self.material = material
@@ -48,7 +48,7 @@ class Entity(ABC):
         return self._pose
 
     @pose.setter
-    def pose(self, pose: Sequence[float]) -> None:
+    def pose(self, pose: Pose) -> None:
         self._pose = _as_pose(pose)
 
     @property
@@ -68,7 +68,7 @@ class Entity(ABC):
 
     def set_pose(self, x: float, y: float, theta: float) -> None:
         """Place the entity at an arbitrary world pose."""
-        self.pose = (x, y, theta)
+        self.pose = np.array((x, y, theta), dtype=float)
 
     def raycast(
         self, origin: Vector, direction: Vector, max_range: float
@@ -100,30 +100,27 @@ class Wall(Entity):
 
 
 class Robot(Entity):
-    """A circular robot with a planar velocity and no sensors or controller."""
+    """A circular robot with a planar velocity and an optional NLOS sensor."""
 
     def __init__(
         self,
         radius: float,
         pose: Pose,
         material: Material = DEFAULT_ROBOT_MATERIAL,
-        nlos: bool = True,
+        nlos: bool = False,
     ) -> None:
         super().__init__(Circle(radius), material, pose)
         self.velocity = np.zeros(2, dtype=float)
+        self.nlos = nlos
 
     @property
     def radius(self) -> float:
         """Return the robot circle radius."""
         return cast(Circle, self.shape).radius
-    los = None
 
 
-def _as_pose(pose: Sequence[float]) -> Vector:
+def _as_pose(pose: Pose) -> Vector:
     value = np.asarray(pose, dtype=float)
     if value.shape != (3,):
         raise ValueError("Pose must contain (x, y, theta).")
     return value
-
-
-# EXTENSION POINT: add sensor-bearing robot subclasses or new entity types here.

@@ -11,24 +11,18 @@ from .entities import Entity, Robot, Wall
 from .geometry.overlap import overlap
 from .geometry.types import Contact, RayHit, Vector
 
-DEFAULT_RESTITUTION = 0.0
-
-
 class World:
     """Owns entities and coordinates queries, dynamics, and collisions."""
 
     def __init__(
         self,
         dynamics: Dynamics | None = None,
-        restitution: float = DEFAULT_RESTITUTION,
     ) -> None:
-        if not 0.0 <= restitution <= 1.0:
-            raise ValueError("Restitution must be between 0 and 1.")
+
         self.entities: list[Entity] = []
         self.robots: list[Robot] = []
         self.walls: list[Wall] = []
         self.dynamics = dynamics if dynamics is not None else Dynamics()
-        self.restitution = restitution
 
     def add(self, entity: Entity) -> None:
         """Add an entity and track robots and walls for collision handling."""
@@ -74,22 +68,33 @@ class World:
         dt: float,
         actions: Mapping[Robot, Action] | None = None,
     ) -> None:
-        """Apply dynamics and then resolve robot collisions."""
+
         action_map = actions if actions is not None else {}
+
         for robot in self.robots:
-            # EXTENSION POINT: controller output is supplied through actions here.
-            action = action_map.get(robot, Action())
-            self.dynamics.step(robot, action, dt)
-        self._resolve_collisions()
+            # latent intent (updated every SENSE_EVERY frames)
+            action = action_map.get(robot, Action())        # actions sourced from controller -> simulation -> (on SENSE_EVERY) world -> dynamics
+
+            # active intent (always updated)
+            # TODO: apply conversion (controller output (as input) -> converter output)
+            uni_action = Dynamics.convert_si_to_uni(action.vx, action.vy, robot.theta)
+            # TODO: apply barrier (takes in v, w and adjusts them)
+
+            self.dynamics.step(robot, uni_action, dt)
+        
+        self._resolve_collisions()  # defunct. replace with functions tracking collisions, not resolving them
 
     def _resolve_collisions(self) -> None:
+        wall_collides = 0
+        bot_collides = 0
         for robot in self.robots:
             for wall in self.walls:
                 contact = overlap(
                     wall.shape, wall.pose, robot.shape, robot.pose
                 )
                 if contact is not None:
-                    self._resolve_against_static(robot, contact)
+                    # self._resolve_against_static(robot, contact)
+                    wall_collides += 1
         
         for index, first in enumerate(self.robots):
             for second in self.robots[index + 1 :]:
@@ -97,7 +102,11 @@ class World:
                     first.shape, first.pose, second.shape, second.pose
                 )
                 if contact is not None:
-                    self._resolve_between_robots(first, second, contact)
+                    # self._resolve_between_robots(first, second, contact)
+                    bot_collides += 1
+
+        if wall_collides > 0: print(f"[COLLISION] Wall: {wall_collides}")
+        if bot_collides > 0: print(f"[COLLISION] Robot: {bot_collides}")
 
     def _resolve_against_static(self, robot: Robot, contact: Contact) -> None:
         """Push the robot out along a wall-to-robot normal."""

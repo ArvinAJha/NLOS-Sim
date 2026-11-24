@@ -11,9 +11,9 @@ if TYPE_CHECKING:
     from ..entities import Entity
 
 Vector = np.ndarray
-Pose = tuple[float, float, float]
+Pose = Vector
 
-ORIGIN_POSE: Pose = (0.0, 0.0, 0.0)
+ORIGIN_POSE: Pose = np.array((0.0, 0.0, 0.0), dtype=float)
 GEOMETRY_EPSILON = 1e-9
 
 

@@ -40,7 +40,7 @@ OVERLAP_ANNOTATION_POSITION = (0.03, 0.97)
 ANNOTATION_FONT_SIZE = 9.0
 
 RAY_COLORMAP = colormaps["tab10"]
-RAY_COLOR_COUNT = len(RAY_COLORMAP.colors)
+RAY_COLOR_COUNT = 10
 
 
 def make_scene_figure(world: World) -> Figure:
@@ -119,7 +119,7 @@ def _draw_raycast_panel(
     pose: Pose,
     wall_colors: dict[Wall, str],
     max_range: float,
-    view_points: Sequence[Sequence[float]],
+    view_points: list[Vector],
 ) -> None:
     draw_walls(ax, world.walls)
     origin = np.asarray(pose[:2], dtype=float)
@@ -147,7 +147,7 @@ def _draw_overlap_panel(
     wall: Wall,
     robot: Robot,
     pose: Pose,
-    view_points: Sequence[Sequence[float]],
+    view_points: list[Vector],
 ) -> None:
     draw_box(ax, wall.box, wall.pose, wall.material.color)
     contact = overlap(wall.shape, wall.pose, robot.shape, pose)
@@ -174,14 +174,17 @@ def _draw_overlap_panel(
     set_equal_view(ax, view_points)
 
 
-def _fan_directions(heading: float) -> np.ndarray:
+def _fan_directions(heading: float) -> list[Vector]:
     angles = np.linspace(
         heading - RAYCAST_FAN_HALF_ANGLE,
         heading + RAYCAST_FAN_HALF_ANGLE,
         RAYCAST_FAN_COUNT,
     )
     angles = np.append(angles, heading)
-    return np.column_stack((np.cos(angles), np.sin(angles)))
+    return [
+        np.array([np.cos(angle), np.sin(angle)], dtype=float)
+        for angle in angles
+    ]
 
 
 def _wall_colors(walls: Sequence[Wall]) -> dict[Wall, str]:
@@ -194,7 +197,9 @@ def _wall_colors(walls: Sequence[Wall]) -> dict[Wall, str]:
 def _hit_color(hit: RayHit | None, wall_colors: dict[Wall, str]) -> str:
     if hit is None:
         return MISS_COLOR
-    return wall_colors.get(hit.entity, UNKNOWN_HIT_COLOR)
+    if isinstance(hit.entity, Wall):
+        return wall_colors.get(hit.entity, UNKNOWN_HIT_COLOR)
+    return UNKNOWN_HIT_COLOR
 
 
 def _is_overlapping(world: World, robot: Robot) -> bool:

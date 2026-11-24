@@ -12,6 +12,22 @@ JUNCTION_CENTER: tuple[float, float] = (0.0, 0.0)
 ROBOT_HEADING_UP = np.pi / 2.0
 SPAWN_CLEARANCE = 0.1
 
+def make_nlos_example() -> World:
+    """Create a sealed L-shaped corridor for an NLOS navigation example."""
+    world = World()
+
+    # Horizontal arm has its west end at x=-8 and turns upward at x=0.
+    world.add(_wall(9.0, 0.3, -3.5, -1.15))
+    world.add(_wall(0.3, 2.0, -8.15, 0.0))
+    world.add(_wall(7.0, 0.3, -4.5, 1.15))
+
+    # Vertical arm rises from the corner to y=8.
+    world.add(_wall(0.3, 9.0, 1.15, 3.5))
+    world.add(_wall(0.3, 7.0, -1.15, 4.5))
+    world.add(_wall(2.6, 0.3, 0.0, 8.15))
+
+    return world
+
 
 def make_t_corridor(
     corridor_width: float = 2.0,
@@ -36,7 +52,7 @@ def make_t_corridor(
     spawn_y = stem_bottom + robot_radius + SPAWN_CLEARANCE
     robot = Robot(
         robot_radius,
-        (JUNCTION_CENTER[0], spawn_y, ROBOT_HEADING_UP),
+        np.array((JUNCTION_CENTER[0], spawn_y, ROBOT_HEADING_UP-0.2)),
     )
     world.add(robot)
     return world
@@ -108,4 +124,4 @@ def _corridor_walls(
 
 
 def _wall(width: float, height: float, x: float, y: float) -> Wall:
-    return Wall(Box(width, height), (x, y, 0.0))
+    return Wall(Box(width, height), np.array((x, y, 0.0)))

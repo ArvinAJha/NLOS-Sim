@@ -5,9 +5,15 @@ import pytest
 
 from nlos_sim.dynamics import Action, Dynamics
 from nlos_sim.entities import Robot, Wall
-from nlos_sim.environments import JUNCTION_CENTER, make_t_corridor
+from nlos_sim.environments import (
+    JUNCTION_CENTER,
+    make_nlos_example,
+    make_t_corridor,
+)
 from nlos_sim.geometry.shapes import Box
 from nlos_sim.world import World
+
+from main import NLOS_EXAMPLE_START_A, NLOS_EXAMPLE_START_B
 
 
 def test_t_corridor_has_one_robot_and_eight_walls() -> None:
@@ -126,3 +132,12 @@ def test_dynamics_clamps_speed() -> None:
 
     assert robot.velocity[0] == pytest.approx(2.0)
     assert robot.x == pytest.approx(2.0)
+
+
+def test_nlos_example_has_sealed_l_shaped_corridor() -> None:
+    world = make_nlos_example()
+
+    assert world.robots == []
+    assert len(world.walls) == 6
+    assert NLOS_EXAMPLE_START_A == (-7.0, 0.0)
+    assert NLOS_EXAMPLE_START_B == (0.0, 7.0)
